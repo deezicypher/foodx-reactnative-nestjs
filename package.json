@@ -1,0 +1,24 @@
+{
+  "name": "foodx-react-native",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "dev:app": "pnpm --dir app start",
+    "dev:api": "pnpm --dir api start:dev",
+    "reset:app": "pnpm --dir app reset-project"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.10.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.10.1",
+  "type": "module"
+}
