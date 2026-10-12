@@ -22,7 +22,7 @@ const SignIn = () => {
     )
 
   const signIn = async (data: SigninForm) => {
-    console.log(data)
+    router.push({ pathname: '/verify-email', params: { email:data.email } });
   }
 
   return (
@@ -91,7 +91,7 @@ const SignIn = () => {
                 </TouchableOpacity>
               </View>
     </View>
-  )
+  ) 
 }
 
 export default SignIn

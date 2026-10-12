@@ -21,7 +21,7 @@ const FormInput = ({
         />
         {
             error && (
-                <Text className='font-quicksand-medium text-xs text-red-500 mt-2 ml-1'>
+                <Text className='font-quicksand-medium text-base text-red-500 mt-2 ml-1'>
                     {error}
                 </Text>
             )

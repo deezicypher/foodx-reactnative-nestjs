@@ -12,7 +12,13 @@ const AuthLayout = () => {
       >
         <ScrollView className='bg-white h-full' keyboardShouldPersistTaps="handled">
         <View className='w-full relative' style={{height: Dimensions.get('screen').height/2.25}}>
-          <ImageBackground source={images.loginGraphic} className='size-full rounded-b-lg' resizeMode='cover' />
+          <View className="overflow-hidden rounded-b-[32px]">
+            <ImageBackground
+              source={images.loginGraphic}
+              className="h-full w-full"
+              resizeMode="cover"
+            />
+          </View>
           <View style={{
             position:"absolute",
             alignSelf:"center",
