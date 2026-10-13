@@ -1,7 +1,11 @@
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { DataSource, DataSourceOptions } from "typeorm";
+import { RefreshToken } from "../auth/entities/refresh-token.entity";
+import { User } from "../users/entities/user.entity";
+import dotenv from 'dotenv'
 
+dotenv.config({ path: `${process.cwd()}/.env.development` });
 
 
 // used inside  NestJS app for the TypeOrmModule.forRootAsync() call.
@@ -30,7 +34,7 @@ export const dataSourceOptions: DataSourceOptions = {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [],
+    entities: [RefreshToken, User],
     synchronize: false,
     migrations: ['dist/db/migrations/*.js'],
 }

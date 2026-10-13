@@ -5,17 +5,20 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import {JwtModule} from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { LocalStrategy } from './local.strategy';
 
 @Module({
-  imports: [UsersModule, PassportModule, JwtModule.registerAsync({
+  imports: [UsersModule, PassportModule.register({defaultStrategy:'local'}),TypeOrmModule.forFeature([RefreshToken]), JwtModule.registerAsync({
     imports: [ConfigModule],
-    inject: [ConfigService],
+    inject: [ConfigService], 
     useFactory: async (configService:ConfigService) => ({
       secret: configService.get<string>('jwt_secret'),
       signOptions: {expiresIn: '15m'}
     })
-  })],
-  providers: [AuthService],
+  })] , 
+  providers: [AuthService,LocalStrategy],
   controllers: [AuthController]
 })
 export class AuthModule {}
