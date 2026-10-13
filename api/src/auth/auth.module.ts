@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LocalStrategy } from './local.strategy';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [UsersModule, PassportModule.register({defaultStrategy:'local'}),TypeOrmModule.forFeature([RefreshToken]), JwtModule.registerAsync({
@@ -18,7 +19,7 @@ import { LocalStrategy } from './local.strategy';
       signOptions: {expiresIn: '15m'}
     })
   })] , 
-  providers: [AuthService,LocalStrategy],
+  providers: [AuthService,LocalStrategy, JwtStrategy],
   controllers: [AuthController]
 })
 export class AuthModule {}
