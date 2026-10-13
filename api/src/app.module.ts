@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validate } from './env.validation';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeOrmAsyncConfig } from './db/data-source';
 
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -21,6 +23,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       ignoreEnvFile: process.env.NODE_ENV === 'production',
       validate,
     }),
+    TypeOrmModule.forRootAsync(typeOrmAsyncConfig),
     // Distributed tracing, auto-correlated logs, request/job metrics, error
     // telemetry, alarms, and more — out of the box. Sign up at https://observe.nestjs.com
     ObserveModule.forRoot({
