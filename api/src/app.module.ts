@@ -8,6 +8,7 @@ import configuration from './config/configuration';
 import { validate } from './env.validation';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmAsyncConfig } from './db/data-source';
+import { AuthModule } from './auth/auth.module';
 
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -32,6 +33,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       serviceId: 'api',
     }),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
