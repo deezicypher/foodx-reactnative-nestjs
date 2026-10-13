@@ -22,7 +22,7 @@ const SignIn = () => {
     )
 
   const signIn = async (data: SigninForm) => {
-    router.push({ pathname: '/verify-email', params: { email:data.email } });
+    //router.push({ pathname: '/verify-email', params: { email:data.email } });
   }
 
   return (
