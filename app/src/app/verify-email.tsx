@@ -180,6 +180,14 @@ const VerifyEmail = () => {
         }
       };
 
+      useEffect(() => {
+        if(secondsLeft <= 0)return 
+        const timer = setTimeout(() => 
+          setSecondsLeft((seconds) => Math.max(seconds - 1, 0))
+      ,1000)
+
+      return () => clearTimeout(timer)
+      },[secondsLeft])
 
     const buttonClasses = [
       'mt-2 h-14 flex-row items-center justify-center gap-2 rounded-[18px] active:opacity-90',

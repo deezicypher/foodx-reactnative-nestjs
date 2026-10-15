@@ -23,6 +23,9 @@ const SignIn = () => {
 
   const signIn = async (data: SigninForm) => {
     //router.push({ pathname: '/verify-email', params: { email:data.email } });
+    // if(error.response?.data.code === "EMAIL_NOT_VERIFIED"){
+    //   router.push({ pathname: '/verify-email', params: { email: error.response.data.email } });
+    // }
   }
 
   return (

@@ -6,6 +6,10 @@ import { SignupForm, signupSchema } from '@/schema/auth.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import FormInput from '@/components/forms/FormInput'
 import PasswordInput from '@/components/forms/PasswordInput'
+import {useMutation} from '@tanstack/react-query'
+import instance from '../services/api'
+import getErrorMessage from '../utils/getErrorMessage'
+
 
 const SignUp = () => {
 
@@ -20,8 +24,23 @@ const SignUp = () => {
 
   })
 
+  const mutation = useMutation({
+    mutationFn: (data:Partial<SignupForm>) => {
+      return instance.post('auth/register',{...data})
+    }
+  })
+
   const signUp = async (data:SignupForm) => {
-    console.log(data)
+    try{
+     const {confirmPassword, ...sdata} = data;
+    const res = await mutation.mutateAsync(sdata)
+    router.push({pathname:'/verify-email', params:{email:res.data.email}})
+    }catch(error:any){
+      const errorMsg = getErrorMessage(error)
+      console.log(errorMsg)
+
+    } 
+
   }
 
   return (

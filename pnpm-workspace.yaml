@@ -3,5 +3,6 @@ packages:
   - "api"
   - "packages/*"
 allowBuilds:
-  '@parcel/watcher': set this to true or false
-  unrs-resolver: set this to true or false
+  '@parcel/watcher': false
+  msgpackr-extract: false
+  unrs-resolver: false
