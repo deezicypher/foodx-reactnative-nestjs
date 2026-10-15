@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
+import getErrorMessage  from './utils/getErrorMessage';
 
 
 const CODE_LENGTH = 6;
@@ -23,11 +24,7 @@ async function resendEmailCode(email: string): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 700));
 }
 
-const getErrorMessage = (error: unknown) => {
-  const message = (error as { response?: { data?: { message?: string } } })
-    ?.response?.data?.message;
-  return message ?? 'That code is incorrect or has expired.';
-};
+
 
 const maskEmail = (email?: string) => {
   if (!email || !email.includes('@')) return 'your email';
