@@ -41,12 +41,14 @@ const SignIn = () => {
     try {
       await mutation.mutateAsync(data)
     } catch (error:any) {
-    if(error.response?.data.code === "EMAIL_NOT_VERIFIED"){
-      router.push({ pathname: '/verify-email', params: { email: error.response.data.email } });
-    }
-    const errMsg = getErrorMessage(error)
-    setErrorDialog(prev => ({...prev, message:errMsg, visible:true}))
-    }
+      const errMsg = getErrorMessage(error)
+      if(error.response?.data.code === "EMAIL_NOT_VERIFIED"){
+        setErrorDialog(prev => ({...prev,name:"Email Verification",message:errMsg, visible:true}))
+        router.push({ pathname: '/verify-email', params: { email: error.response.data.email } });
+      }else{
+      setErrorDialog(prev => ({...prev, message:errMsg, visible:true}))
+      }
+  }
   }
 
   return (

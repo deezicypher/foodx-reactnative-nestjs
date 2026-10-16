@@ -330,7 +330,7 @@ export class AuthService {
                 ) return {ok: false as const}
             
                 const challenge = await challengeRepo
-                                    .createQueryBuilder('C')
+                                    .createQueryBuilder('c')
                                     .setLock('pessimistic_write')
                                     .where('c.userId = :userId', {userId})
                                     .andWhere('c.purpose = :purpose', {purpose})
