@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import getErrorMessage  from './utils/getErrorMessage';
+import api from './services/api';
 
 
 const CODE_LENGTH = 6;
@@ -15,12 +16,12 @@ type Feedback = { type: 'error' | 'info'; text: string } | null;
 
 
 async function verifyEmailCode(email: string, code: string): Promise<void> {
-  // await api.post('/auth/verify-email', { email, code });
+  await api.post('auth/verify-email', { email, code });
   await new Promise((resolve) => setTimeout(resolve, 900));
 }
 
 async function resendEmailCode(email: string): Promise<void> {
-  // await api.post('/auth/resend-verification', { email });
+  await api.post('auth/resend-verification', { email });
   await new Promise((resolve) => setTimeout(resolve, 700));
 }
 

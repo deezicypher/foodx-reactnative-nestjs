@@ -118,19 +118,8 @@ export class AuthService {
     async validateUser(email:string, pass:string): Promise<any>{
         const user = await this.userService.findOneByEmail(email)
         if(!user) throw new NotFoundException("Invalid credentials ")
-        
-        if(!user.isEmailVerified)  throw new ForbiddenException({
-                code: 'EMAIL_NOT_VERIFIED',
-                message: 'Please verify your email before signing in.',
-            });
-        
         const passwordMatched = await bcrypt.compare(pass,user.password)
         if(!passwordMatched) throw new UnauthorizedException('Invalid credentials')
-        
-        return user
-    }
-
-    async login(user:User){
         if(!user.isEmailVerified){
             await this.issueChallenge(user.id,VerificationPurpose.REGISTRATION).catch(() => {})
             throw new ForbiddenException({
@@ -139,6 +128,10 @@ export class AuthService {
                 email: user.email
             })
         }
+        return user
+    }
+
+    async login(user:User){
         const tokens = await this.createTokenPair(user)
         return {user,...tokens}
     }

@@ -1,5 +1,5 @@
 import { View, Text, Button, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { router } from 'expo-router'
 import { Controller, useForm } from 'react-hook-form'
 import { SignupForm, signupSchema } from '@/schema/auth.schema'
@@ -7,8 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import FormInput from '@/components/forms/FormInput'
 import PasswordInput from '@/components/forms/PasswordInput'
 import {useMutation} from '@tanstack/react-query'
-import instance from '../services/api'
+import api from '../services/api'
 import getErrorMessage from '../utils/getErrorMessage'
+import AppErrorDialog from '@/components/ErrorDialog'
 
 
 const SignUp = () => {
@@ -24,9 +25,15 @@ const SignUp = () => {
 
   })
 
+  const [errorDialog, setErrorDialog] = useState({
+    visible: false,
+    name: "Signup Failed",
+    message: ""
+  })
+
   const mutation = useMutation({
     mutationFn: (data:Partial<SignupForm>) => {
-      return instance.post('auth/register',{...data})
+      return api.post('auth/register',data)
     }
   })
 
@@ -37,6 +44,7 @@ const SignUp = () => {
     router.push({pathname:'/verify-email', params:{email:res.data.email}})
     }catch(error:any){
       const errorMsg = getErrorMessage(error)
+      setErrorDialog(prev => ({...prev, message:errorMsg, visible:true}))
       console.log(errorMsg)
 
     } 
@@ -44,6 +52,7 @@ const SignUp = () => {
   }
 
   return (
+    <>
     <View className='p-5 mt-20 flex gap-5'>
         <Controller
           control={control}
@@ -131,6 +140,13 @@ const SignUp = () => {
                 </TouchableOpacity>
               </View>
     </View>
+    <AppErrorDialog 
+      visible={errorDialog.visible}
+      title={errorDialog.name}
+      message={errorDialog.message}
+      onClose={() => setErrorDialog(prev => ({...prev, visible:false}))}
+      />
+    </>
   )
 }
 

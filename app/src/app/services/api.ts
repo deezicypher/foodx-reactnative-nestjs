@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-const instance = axios.create({
+const api = axios.create({
     baseURL: process.env.EXPO_PUBLIC_API_URL,
     withCredentials: true
 })
 
-export default instance
+export default api

@@ -5,6 +5,11 @@ import { SigninForm, signinSchema} from '@/schema/auth.schema'
 import {zodResolver} from '@hookform/resolvers/zod'
 import FormInput from '@/components/forms/FormInput'
 import PasswordInput from '@/components/forms/PasswordInput'
+import { useMutation } from '@tanstack/react-query'
+import api from '../services/api'
+import { useState } from 'react'
+import getErrorMessage from '../utils/getErrorMessage'
+import AppErrorDialog from '@/components/ErrorDialog'
 
 
 
@@ -19,16 +24,33 @@ const SignIn = () => {
           password: ''
         }
       }
-    )
+    );
+  const [errorDialog, setErrorDialog] = useState({
+    visible:false,
+    name:"Login failed",
+    message:""
+  })
+
+  const mutation = useMutation({
+    mutationFn: (data:SigninForm) => {
+      return api.post('auth/login', data)
+  }
+  })
 
   const signIn = async (data: SigninForm) => {
-    //router.push({ pathname: '/verify-email', params: { email:data.email } });
-    // if(error.response?.data.code === "EMAIL_NOT_VERIFIED"){
-    //   router.push({ pathname: '/verify-email', params: { email: error.response.data.email } });
-    // }
+    try {
+      await mutation.mutateAsync(data)
+    } catch (error:any) {
+    if(error.response?.data.code === "EMAIL_NOT_VERIFIED"){
+      router.push({ pathname: '/verify-email', params: { email: error.response.data.email } });
+    }
+    const errMsg = getErrorMessage(error)
+    setErrorDialog(prev => ({...prev, message:errMsg, visible:true}))
+    }
   }
 
   return (
+    <>
     <View className='flex gap-5 p-5 mt-20'>
      <Controller
         control={control}
@@ -94,6 +116,14 @@ const SignIn = () => {
                 </TouchableOpacity>
               </View>
     </View>
+
+    <AppErrorDialog
+      visible={errorDialog.visible}
+      title={errorDialog.name}
+      message={errorDialog.message}
+      onClose={() => setErrorDialog(prev => ({...prev, visible:false}))}
+      />
+    </>
   ) 
 }
 
