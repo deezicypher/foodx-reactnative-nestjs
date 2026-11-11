@@ -17,6 +17,7 @@ import { VerifyRegistrationDto } from './dto/verfiyReg.dto';
 import { ResendDto } from './dto/resend.dto';
 import { MailProducer } from '../mail/mail.producer';
 import { ResendCooldownException } from './verification.errors';
+import { ForgotPasswordDTO } from './dto/forgot-password.dto';
 
 
 @Injectable()
@@ -181,19 +182,9 @@ export class AuthService {
         purpose: VerificationPurpose,
         targetEmail?: string,
     ): Promise<any>{
-        const last = await this.challengesRepo.findOne({
-            where:{userId},
-            order: {createdAt: 'DESC'}
-        })
 
         const RESEND_COOLDOWN_MS = 30 * 1000;
-        if(last){
-            const elapsed =  Date.now() - last.createdAt.getTime()
-            if (elapsed < RESEND_COOLDOWN_MS) {
-                // throw new HttpException('Please wait before requesting another code', 429,);
-                throw new ResendCooldownException(Math.ceil((RESEND_COOLDOWN_MS - elapsed) / 1000))
-            }
-        }
+        
         const code = generateVerificationCode();
         const challengeId = randomUUID();
 
@@ -210,12 +201,24 @@ export class AuthService {
                     .createQueryBuilder('u')
                     .setLock('pessimistic_write')
                     .where('u.id = :userId', {userId})
-                    .getOne();
-            
+                    .getOne()
+
             if(!user) throw new NotFoundException('User not found')
 
+            const last = await challengeRepo.findOne({
+            where: { userId, purpose },
+            order: { createdAt: 'DESC' },
+            });
 
-            
+            if (last) {
+            const elapsed = Date.now() - last.createdAt.getTime();
+            if (elapsed < RESEND_COOLDOWN_MS) {
+                throw new ResendCooldownException(
+                Math.ceil((RESEND_COOLDOWN_MS - elapsed) / 1000),
+                );
+            }
+            }
+                        
             if(
                 purpose === VerificationPurpose.REGISTRATION &&
                 user.isEmailVerified
@@ -247,9 +250,9 @@ export class AuthService {
                     .createQueryBuilder()
                     .update(EmailVerificationChallenge)
                     .set({consumedAt: new Date()})
-                    .where('"userId" = :userId', {userId})
-                    .andWhere('"purpose" = :purpose', {purpose})
-                    .andWhere('"consumedAt" IS NULL')
+                    .where('userId = :userId', {userId})
+                    .andWhere('purpose = :purpose', {purpose})
+                    .andWhere('consumedAt IS NULL')
                     .execute();
             
             const challenge = challengeRepo.create({
@@ -275,6 +278,7 @@ export class AuthService {
              }
         })
         
+   
 
         await this.mailProducer.sendVerificationCode(result.email,result.name,
             result.code,purpose,result.challengeId)
@@ -407,7 +411,12 @@ export class AuthService {
         const user = await this.userService.findOneByEmail(email)
         if(!user) throw new BadRequestException('Invalid or expired verification code')
         
+        try{
         return this.issueChallenge(user.id,VerificationPurpose.REGISTRATION,email)
+        } catch (err) {
+             if (err instanceof ResendCooldownException) return false; // a code is already on its way
+            throw err; 
+        }
     }
 
     async verifyReg(dto:VerifyRegistrationDto){
@@ -415,10 +424,30 @@ export class AuthService {
         const user = await this.userService.findOneByEmail(email)
         if(!user) throw new BadRequestException('Invalid or expired verification code')
         
+        try{
         await this.verifyChallenge(user.id,VerificationPurpose.REGISTRATION,dto.code)
 
         return {
             msg: "Email verified successfully"
+        }
+        } catch (err) {
+             if (err instanceof ResendCooldownException) return false; // a code is already on its way
+            throw err; 
+        }
+    }
+
+    async forgotPassword(dto:ForgotPasswordDTO){
+        const user = await this.userService.findOneByEmail(dto.email)
+        if(!user){
+            return {
+                msg: "If account exists, an email has been sent"
+            }
+        }
+        try{
+        return await this.issueChallenge(user.id,VerificationPurpose.PASSWORD_RESET,user.email)
+        } catch (err) {
+             if (err instanceof ResendCooldownException) return false; // a code is already on its way
+            throw err; 
         }
     }
 }

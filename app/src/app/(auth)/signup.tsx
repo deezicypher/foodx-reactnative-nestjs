@@ -7,8 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import FormInput from '@/components/forms/FormInput'
 import PasswordInput from '@/components/forms/PasswordInput'
 import {useMutation} from '@tanstack/react-query'
-import api from '../services/api'
-import getErrorMessage from '../utils/getErrorMessage'
+import api from '../../services/api'
+import getErrorMessage from '../../utils/getErrorMessage'
 import AppErrorDialog from '@/components/ErrorDialog'
 
 
@@ -118,7 +118,7 @@ const SignUp = () => {
               )}
               />
 
-              <TouchableOpacity onPress={handleSubmit(signUp)} disabled={isSubmitting}
+              <TouchableOpacity onPress={() => handleSubmit(signUp)} disabled={isSubmitting}
               className='items-center justify-center h-14 mt-6 bg-primary rounded-2xl'>
                 {isSubmitting ?
                 <ActivityIndicator size="small" color="#fff" />

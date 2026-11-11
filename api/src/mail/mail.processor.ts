@@ -1,5 +1,5 @@
 import { OnWorkerEvent, Processor, WorkerHost } from "@nestjs/bullmq";
-import { MAIL_QUEUE, SEND_VERIFICATION_CODE, VerificationMailJob } from "./mail.constants";
+import { MAIL_QUEUE, SEND_FORGOT_PASSWORD_CODE, SEND_VERIFICATION_CODE, VerificationMailJob } from "./mail.constants";
 import { Logger } from "@nestjs/common";
 import { MailService } from "./mail.service";
 import { Job } from "bullmq";
@@ -18,6 +18,10 @@ export class MailProcessor extends WorkerHost{
         switch(job.name){
             case SEND_VERIFICATION_CODE:
                 return this.mailService.sendVerificationCode(
+                    job.data.to,job.data.name, job.data.code
+                );
+            case SEND_FORGOT_PASSWORD_CODE:
+                return this.mailService.sendForgotPasswordCode(
                     job.data.to,job.data.name, job.data.code
                 );
             default:

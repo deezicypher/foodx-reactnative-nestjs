@@ -101,7 +101,7 @@ export default function AppErrorDialog({
               <Feather name="alert-circle" size={24} color="black" />
           </View>
 
-          <Text className="mb-2 text-center font-rubik-semibold text-[21px] leading-[29px] text-[#17231D]">
+          <Text className="mb-2 text-center font-rubik-semibold text-[21px] leading-[29px] text-slate-500">
             {title}
           </Text>
 

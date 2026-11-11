@@ -2,10 +2,10 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { View, Text, Pressable, Animated, TextInput, Keyboard, ScrollView, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { ComponentRef, useCallback, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import getErrorMessage  from './utils/getErrorMessage';
-import api from './services/api';
+import getErrorMessage  from '../utils/getErrorMessage';
+import api from '../services/api';
 
 
 const CODE_LENGTH = 6;
@@ -97,7 +97,7 @@ const OtpBox = ({ digit, state }: { digit: string; state: BoxState }) => {
 
 const VerifyEmail = () => {
   const {email} = useLocalSearchParams<{email?:string}>();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const shakeX = useRef(new Animated.Value(0)).current;
   const [status, setStatus] = useState<Status>('idle');
   const [code, setCode] = useState('');

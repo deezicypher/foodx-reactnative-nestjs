@@ -9,21 +9,38 @@ export class MailService {
     ){}
 
     async sendVerificationCode(to: string, name:string, code: string) {
+      const { error } = await this.mailerService.sendMail({
+      //   from: this.config.getOrThrow('MAIL_FROM'),
+        to,
+        subject: `${code} is your verification code`,
+        template: 'verify-email',
+        text: `Your verification code is ${code}. It expires in 10 minutes. If you didn't request this, you can ignore this email.`,
+        context: {
+          code,
+          name,
+          privacyUrl:    'https://foodx/privacy',
+          supportUrl:    'https://foodx/support',
+          year:          new Date().getFullYear(),
+        }
+      });
+
+      if (error) throw new Error(error.message);
+  }
+
+  async sendForgotPasswordCode(to: string, name:string, code: string) {
     const { error } = await this.mailerService.sendMail({
-    //   from: this.config.getOrThrow('MAIL_FROM'),
       to,
-      subject: `${code} is your verification code`,
-      template: 'verify-email',
-      text: `Your verification code is ${code}. It expires in 10 minutes. If you didn't request this, you can ignore this email.`,
+      subject: `${code} is your password reset code`,
+      template: 'forgot-password',
+      text: `Your password reset code is ${code}. It expires in 10 minutes. If you didn't request this, you can ignore this email.`,
       context: {
         code,
-        name,
-        privacyUrl:    'https://foodx/privacy',
-        supportUrl:    'https://foodx/support',
-        year:          new Date().getFullYear(),
+          name,
+          privacyUrl:    'https://foodx/privacy',
+          supportUrl:    'https://foodx/support',
+          year:          new Date().getFullYear()
       }
-    });
+  })
+}
 
-    if (error) throw new Error(error.message);
-  }
 }

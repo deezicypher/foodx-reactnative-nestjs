@@ -6,9 +6,9 @@ import {zodResolver} from '@hookform/resolvers/zod'
 import FormInput from '@/components/forms/FormInput'
 import PasswordInput from '@/components/forms/PasswordInput'
 import { useMutation } from '@tanstack/react-query'
-import api from '../services/api'
+import api from '../../services/api'
 import { useState } from 'react'
-import getErrorMessage from '../utils/getErrorMessage'
+import getErrorMessage from '../../utils/getErrorMessage'
 import AppErrorDialog from '@/components/ErrorDialog'
 
 
@@ -87,7 +87,7 @@ const SignIn = () => {
           />
 
           <TouchableOpacity
-            onPress={ () => {}}
+            onPress={ () => router.push('/forgot-password')}
             className='self-end mt-3'
             >
               <Text className='font-quicksand-semibold text-base text-primary'>
@@ -96,7 +96,7 @@ const SignIn = () => {
 
             </TouchableOpacity>
 
-            <TouchableOpacity  onPress={handleSubmit(signIn)} disabled={isSubmitting} 
+            <TouchableOpacity  onPress={() => handleSubmit(signIn)} disabled={isSubmitting} 
               className='h-14 bg-primary rounded-2xl items-center justify-center mt-6'>
                 {isSubmitting ? 
                   <ActivityIndicator size="small" color="#fff" />

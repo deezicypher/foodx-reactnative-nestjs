@@ -6,6 +6,7 @@ import { VerifyRegistrationDto } from './dto/verfiyReg.dto';
 import { ResendDto } from './dto/resend.dto';
 import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { ForgotPasswordDTO } from './dto/forgot-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -44,5 +45,11 @@ export class AuthController {
     @Throttle({ default: { limit: 10, ttl: 60_000 } })
     async verify(@Body() dto: VerifyRegistrationDto){
         return this.authService.verifyReg(dto)
+    }
+
+    @Post('forgot-password')
+    // @Throttle({ default: { limit: 5, ttl: 60_000 } })
+    async forgotPassword(@Body() dto: ForgotPasswordDTO){
+        return this.authService.forgotPassword(dto)
     }
 }
