@@ -32,8 +32,11 @@ const ForgotPassword = () => {
     const sendEmail = async () => {
         if(!email) return setError('Please input your email')
         try {
-            const res = await mutation.mutateAsync()
-            router.push({pathname:'/verify-email', params:{email:res.data.email}})
+            await mutation.mutateAsync()
+            router.push({
+                pathname:'/verify-email',
+                params:{email:email.trim().toLowerCase(), mode:'password-reset'}
+            })
         } catch (error:any) {
             console.log(error)
             const errorMsg = getErrorMessage(error)

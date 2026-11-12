@@ -1,11 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router'
-import { View, Text, Pressable, Animated, TextInput, Keyboard, ScrollView, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, Animated, TextInput, Keyboard, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ComponentRef, useCallback, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import getErrorMessage  from '../utils/getErrorMessage';
 import api from '../services/api';
+import FormInput from '@/components/forms/FormInput';
 
 
 const CODE_LENGTH = 6;
@@ -20,11 +21,19 @@ async function verifyEmailCode(email: string, code: string): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 900));
 }
 
-async function resendEmailCode(email: string): Promise<void> {
-  await api.post('auth/resend-verification', { email });
+async function resendCode(email: string, isPasswordReset: boolean): Promise<void> {
+  await api.post(
+    isPasswordReset ? 'auth/forgot-password' : 'auth/resend-verification',
+    { email },
+  );
   await new Promise((resolve) => setTimeout(resolve, 700));
 }
 
+
+async function resetPassword(email: string, code: string, newPassword:string): Promise<void> {
+  await api.post('auth/reset-password', { email, code, newPassword });
+  await new Promise((resolve) => setTimeout(resolve, 900));
+}
 
 
 const maskEmail = (email?: string) => {
@@ -96,11 +105,15 @@ const OtpBox = ({ digit, state }: { digit: string; state: BoxState }) => {
 };
 
 const VerifyEmail = () => {
-  const {email} = useLocalSearchParams<{email?:string}>();
+  const {email, mode} = useLocalSearchParams<{email?:string; mode?:string}>();
+  const isPasswordReset = mode === 'password-reset';
   const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const shakeX = useRef(new Animated.Value(0)).current;
   const [status, setStatus] = useState<Status>('idle');
   const [code, setCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -112,7 +125,10 @@ const VerifyEmail = () => {
 
   const isComplete = code.length === CODE_LENGTH;
   const isBusy = status === 'loading' || status === 'success';
-  const canSubmit = isComplete && status === 'idle';
+  const passwordsMatch = newPassword === confirmPassword;
+  const canSubmit = isComplete &&
+    status === 'idle' &&
+    (!isPasswordReset || (newPassword.length >= 8 && passwordsMatch));
 
   const getBoxState = (index: number): BoxState => {
     if (status === 'error') return 'error';
@@ -123,19 +139,38 @@ const VerifyEmail = () => {
   };
 
 
-  const handleVerify = useCallback(
+  const handleSubmit = useCallback(
       async (value: string) => {
         if (value.length !== CODE_LENGTH || status !== 'idle') return;
+
+        if (isPasswordReset) {
+          if (newPassword.length < 8) {
+            setPasswordError('Password must be at least 8 characters.');
+            return;
+          }
+          if (!passwordsMatch) {
+            setPasswordError('Passwords do not match.');
+            return;
+          }
+        }
   
         Keyboard.dismiss();
         setStatus('loading');
         setFeedback(null);
+        setPasswordError('');
   
         try {
-          await verifyEmailCode(email ?? '', value);
+          if (isPasswordReset) {
+            await resetPassword(email ?? '', value, newPassword);
+          } else {
+            await verifyEmailCode(email ?? '', value);
+          }
           setStatus('success');
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setTimeout(() => router.replace('/(tabs)'), 800);
+          setTimeout(
+            () => router.replace(isPasswordReset ? '/signin' : '/(tabs)'),
+            800,
+          );
         } catch (error) {
           setStatus('error');
           setFeedback({ type: 'error', text: getErrorMessage(error) });
@@ -147,7 +182,7 @@ const VerifyEmail = () => {
           }, 900);
         }
       },
-      [email, status]
+      [email, isPasswordReset, newPassword, passwordsMatch, status]
     );
 
     const handleChange = (text: string) => {
@@ -158,7 +193,7 @@ const VerifyEmail = () => {
   
       setCode(cleaned);
       if (feedback) setFeedback(null);
-      if (cleaned.length === CODE_LENGTH) handleVerify(cleaned);
+      if (cleaned.length === CODE_LENGTH && !isPasswordReset) handleSubmit(cleaned);
     };
 
 
@@ -167,7 +202,7 @@ const VerifyEmail = () => {
     
         setIsResending(true);
         try {
-          await resendEmailCode(email ?? '');
+          await resendCode(email ?? '', isPasswordReset);
           setCode('');
           setStatus('idle');
           setSecondsLeft(RESEND_SECONDS);
@@ -197,8 +232,17 @@ const VerifyEmail = () => {
     ].join(' ');
 
   return (
-    <SafeAreaView className='p-5' >
-    <ScrollView  keyboardShouldPersistTaps="handled">
+    <SafeAreaView className="flex-1 p-5">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+    <ScrollView
+      className="flex-1"
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+    >
           <Pressable
             onPress={() => router.back()}
             accessibilityRole='button'
@@ -223,10 +267,10 @@ const VerifyEmail = () => {
 
         <View className='mt-7 items-center'>
           <Text className='text-center text-3xl font-quicksand-bold text-gray-500'>
-            Verify your email
+            {isPasswordReset ? 'Reset your password' : 'Verify your email'}
           </Text>
           <Text className='mt-2.5 text-center text-base leading-6 text-gray-500'>
-            We sent a {CODE_LENGTH}-digit code to{'\n'}
+            We sent a {CODE_LENGTH}-digit {isPasswordReset ? 'reset' : 'verification'} code to{'\n'}
             <Text className='font-quicksand-semibold text-gray-900'>{maskEmail(email)}</Text>
           </Text>
         </View>
@@ -259,7 +303,42 @@ const VerifyEmail = () => {
               />
           </View>
         </Animated.View>
-
+        {isPasswordReset && isComplete ? (
+          <View className="mt-5">
+            <FormInput
+              label="New password"
+              placeholder="Enter your new password"
+              value={newPassword}
+              onChangeText={(value) => {
+                setNewPassword(value);
+                setPasswordError('');
+              }}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isBusy}
+              error={passwordError || (
+                newPassword.length > 0 && newPassword.length < 8
+                  ? 'Password must be at least 8 characters.'
+                  : undefined
+              )}
+            />
+            <FormInput
+              label="Confirm new password"
+              placeholder="Re-enter your new password"
+              value={confirmPassword}
+              onChangeText={(value) => {
+                setConfirmPassword(value);
+                setPasswordError('');
+              }}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isBusy}
+              error={confirmPassword && !passwordsMatch ? 'Passwords do not match.' : undefined}
+            />
+          </View>
+        ) : null}
         <View className='mt-3.5 min-h-[44px] justify-center'>
           {feedback? 
           <View className='flex-row items-center justify-center gap-1.5'>
@@ -280,7 +359,7 @@ const VerifyEmail = () => {
         </View>
 
         <Pressable
-          onPress={() => handleVerify(code)}
+          onPress={() => handleSubmit(code)}
           disabled={!canSubmit}
           accessibilityRole='button'
           accessibilityState={{disabled: !canSubmit, busy: status === 'loading'}}
@@ -296,7 +375,9 @@ const VerifyEmail = () => {
           </Text>
           </>  
           :
-          <Text className='text-base font-quicksand-bold text-white'>Verify Email</Text>
+          <Text className='text-base font-quicksand-bold text-white'>
+            {isPasswordReset ? 'Reset Password' : 'Verify Email'}
+          </Text>
           }
           </Pressable>
 
@@ -341,7 +422,8 @@ const VerifyEmail = () => {
           </View>
 
          
-        </ScrollView>
+    </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }

@@ -7,6 +7,7 @@ import { ResendDto } from './dto/resend.dto';
 import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ForgotPasswordDTO } from './dto/forgot-password.dto';
+import { ResetPasswordDTO } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -48,8 +49,15 @@ export class AuthController {
     }
 
     @Post('forgot-password')
-    // @Throttle({ default: { limit: 5, ttl: 60_000 } })
+    @Throttle({ default: { limit: 5, ttl: 60_000 } })
     async forgotPassword(@Body() dto: ForgotPasswordDTO){
         return this.authService.forgotPassword(dto)
+    }
+
+    @Post('reset-password')
+    @HttpCode(200)
+    @Throttle({ default: { limit: 5, ttl: 60_000 } })
+    async resetPassword(@Body() dto: ResetPasswordDTO) {
+        return this.authService.resetPassword(dto);
     }
 }

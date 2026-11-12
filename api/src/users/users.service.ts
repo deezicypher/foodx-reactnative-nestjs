@@ -14,13 +14,15 @@ export class UsersService {
   ){}
 
   async create(dto: CreateUserDto) {
-    const existingUser = await this.findOneByEmail(dto.email)
+    const email = dto.email.trim().toLowerCase();
+    const existingUser = await this.findOneByEmail(email)
     if(existingUser?.isEmailVerified) throw new ConflictException("User with this email already exists")
     try{
     const pass = await bcrypt.hash(dto.password, 12)
-    const user = existingUser?this.userRepo.save({...existingUser, 
+    const user = existingUser?this.userRepo.save({...existingUser,
+      email,
       name:dto.name, password:pass}):this.userRepo.save(
-        this.userRepo.create({...dto,password:pass})
+        this.userRepo.create({...dto,email,password:pass})
       )
     return user
     }catch(err){
@@ -41,7 +43,10 @@ export class UsersService {
   }
   
   findOneByEmail(email: string) : Promise<User | null> {
-    return this.userRepo.findOneBy({email});
+    return this.userRepo
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = :email', { email: email.trim().toLowerCase() })
+      .getOne();
   }
 
 

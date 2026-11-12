@@ -18,6 +18,8 @@ import { ResendDto } from './dto/resend.dto';
 import { MailProducer } from '../mail/mail.producer';
 import { ResendCooldownException } from './verification.errors';
 import { ForgotPasswordDTO } from './dto/forgot-password.dto';
+import { ResetPasswordDTO } from './dto/reset-password.dto';
+import { IsNull } from 'typeorm';
 
 
 @Injectable()
@@ -437,7 +439,9 @@ export class AuthService {
     }
 
     async forgotPassword(dto:ForgotPasswordDTO){
-        const user = await this.userService.findOneByEmail(dto.email)
+        const email = dto.email.trim().toLowerCase();
+        const user = await this.userService.findOneByEmail(email);
+
         if(!user){
             return {
                 msg: "If account exists, an email has been sent"
@@ -450,4 +454,81 @@ export class AuthService {
             throw err; 
         }
     }
+
+
+    async resetPassword(dto: ResetPasswordDTO) {
+        const secret = this.configService.getOrThrow<string>('email_secret');
+        const email = dto.email.trim().toLowerCase();
+        const passwordHash = await bcrypt.hash(dto.newPassword, 12);
+
+        const result = await this.dataSource.transaction(async (manager) => {
+            const userRepo = manager.getRepository(User);
+            const challengeRepo = manager.getRepository(EmailVerificationChallenge);
+            const refreshTokenRepo = manager.getRepository(RefreshToken);
+
+            const user = await userRepo
+                .createQueryBuilder('u')
+                .setLock('pessimistic_write')
+                .where('LOWER(u.email) = :email', { email })
+                .getOne();
+
+ 
+            if(!user) return { ok: false as const };
+            
+            
+            const challenge = await challengeRepo
+                .createQueryBuilder('c')
+                .setLock('pessimistic_write')
+                .where('c.userId = :userId', { userId: user?.id })
+                .andWhere('c.purpose = :purpose', { purpose: VerificationPurpose.PASSWORD_RESET })
+                .andWhere('"c"."consumedAt" IS NULL')
+                .orderBy('c.createdAt', 'DESC')
+                .getOne(); 
+
+
+            if ( !challenge || challenge.expiresAt.getTime() <= Date.now() || challenge.attempts >= 5) {
+                return { ok: false as const };
+            }
+
+
+
+            const submittedHash = hashVerificationCode(
+                user.id,
+                challenge.id,
+                dto.code,
+                secret,
+            );
+
+
+            if(!matchesVerificationCode(submittedHash, challenge.codeHash)) {
+                challenge.attempts += 1;
+                if (challenge.attempts >= 5) {
+                    challenge.consumedAt = new Date();
+                }
+                await challengeRepo.save(challenge);
+                return { ok: false as const };
+            }
+
+            challenge.consumedAt = new Date();
+            user.password = passwordHash;
+
+            await challengeRepo.save(challenge);
+            await userRepo.save(user);
+
+            await refreshTokenRepo.update(
+                { userId: user.id, revokedAt: IsNull() },
+                { revokedAt: new Date() },
+            );
+
+            return { ok: true as const };
+        })
+
+        if (!result.ok) {
+            throw new BadRequestException('Invalid or expired password reset code');
+        }
+
+        return { msg: 'Password reset successfully' };
+    }
+
+
 }
