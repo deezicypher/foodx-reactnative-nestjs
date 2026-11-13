@@ -4,6 +4,7 @@ import { images } from '../../../constants'
 import '../global.css'
 
 const AuthLayout = () => {
+  
   return (
    <KeyboardAvoidingView
         className="flex-1"

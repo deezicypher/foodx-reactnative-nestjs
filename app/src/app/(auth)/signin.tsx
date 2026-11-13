@@ -16,7 +16,7 @@ import AppErrorDialog from '@/components/ErrorDialog'
 const SignIn = () => {
 
   const {control, handleSubmit,
-    formState: {errors, isSubmitting}} = useForm<SigninForm>(
+    formState: {errors}} = useForm<SigninForm>(
       {
         resolver: zodResolver(signinSchema),
         defaultValues: {
@@ -96,9 +96,11 @@ const SignIn = () => {
 
             </TouchableOpacity>
 
-            <TouchableOpacity  onPress={() => handleSubmit(signIn)} disabled={isSubmitting} 
+            <TouchableOpacity
+              onPress={() => { void handleSubmit(signIn)(); }}
+              disabled={mutation.isPending}
               className='h-14 bg-primary rounded-2xl items-center justify-center mt-6'>
-                {isSubmitting ? 
+                {mutation.isPending ?
                   <ActivityIndicator size="small" color="#fff" />
                   :
                   <Text className='font-quicksand-semibold text-white'>
