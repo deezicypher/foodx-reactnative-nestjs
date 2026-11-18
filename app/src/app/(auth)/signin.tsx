@@ -103,7 +103,7 @@ const SignIn = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => { void handleSubmit(signIn)(); }}
+              onPress={() => {void handleSubmit(signIn)()}}
               disabled={mutation.isPending}
               className='h-14 bg-primary rounded-2xl items-center justify-center mt-6'>
                 {mutation.isPending ?
