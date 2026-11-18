@@ -1,12 +1,13 @@
 import { SplashScreen, Stack } from "expo-router";
 import {useFonts} from 'expo-font'
 import './global.css'
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import useAuthStore from "@/store/auth.store";
 
 export default function RootLayout() {
    const {isLoading, fetchAuthenticatedUser} = useAuthStore();
+   const [queryClient] = useState(() => new QueryClient());
 
   const [fontsLoaded, error] = useFonts(
     {
@@ -19,13 +20,16 @@ export default function RootLayout() {
 
   useEffect(() => {
     if(error) throw error;
-    if(fontsLoaded) SplashScreen.hideAsync();
+    if(fontsLoaded && !isLoading) void SplashScreen.hideAsync();
 
-  },[fontsLoaded, error])
+  },[fontsLoaded, error, isLoading])
+
+  useEffect(() => {
+    void fetchAuthenticatedUser();
+  }, [fetchAuthenticatedUser])
 
   if(!fontsLoaded || isLoading) return null;
 
-  const queryClient = new QueryClient()
   return (
     <QueryClientProvider client={queryClient}>
   <Stack  screenOptions={{headerShown: false}}/>

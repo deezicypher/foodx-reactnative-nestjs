@@ -1,10 +1,15 @@
-import { Slot } from 'expo-router'
+import { Redirect, Slot } from 'expo-router'
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Dimensions, Image } from 'react-native'
 import { images } from '../../../constants'
 import '../global.css'
+import useAuthStore from '@/store/auth.store'
 
 const AuthLayout = () => {
-  
+  const {isAuthenticated, isLoading} = useAuthStore();
+
+  if(isLoading) return null
+  if(isAuthenticated) return <Redirect href="/(tabs)" />
+
   return (
    <KeyboardAvoidingView
         className="flex-1"

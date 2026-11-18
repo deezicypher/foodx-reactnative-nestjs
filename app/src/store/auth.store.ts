@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { User } from '../../type';
-import api from '@/services/api';
+import api, { setAuthExpiredHandler } from '@/services/api';
+import { getAccessToken, getRefreshToken } from '@/libs/auth-storage';
 
 type AuthState = {
     isAuthenticated: boolean;
@@ -18,7 +19,7 @@ type AuthState = {
 const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   user: null,
-  isLoading: false,
+  isLoading: true,
 
   setAuthenticated: (value: boolean) => set({isAuthenticated:value}),
   setUser : (user: User|null) => set({user}),
@@ -27,6 +28,15 @@ const useAuthStore = create<AuthState>((set) => ({
   fetchAuthenticatedUser: async () => {
     set({isLoading:true})
     try{
+        const [accessToken, refreshToken] = await Promise.all([
+          getAccessToken(),
+          getRefreshToken(),
+        ]);
+        if (!accessToken && !refreshToken) {
+          set({user:null, isAuthenticated:false})
+          return
+        }
+
         const user = await api.get('auth/profile').then((res:any) => res.data);
         if(user) set({user, isAuthenticated:true})
         else set({user:null, isAuthenticated:false})
@@ -38,6 +48,12 @@ const useAuthStore = create<AuthState>((set) => ({
     }
 }
 
+
+
 }))
+
+setAuthExpiredHandler(() => {
+  useAuthStore.setState({user:null, isAuthenticated:false, isLoading:false})
+})
 
 export default useAuthStore

@@ -4,6 +4,7 @@ import { images, offers } from "../../../constants";
 import {Fragment} from 'react'
 import cn from 'clsx'
 import CartButton from "@/components/CartButton";
+import authStore from "@/store/auth.store";
 
 export default function Index() {
   
@@ -23,7 +24,11 @@ export default function Index() {
         </TouchableOpacity>
       </View>
       <CartButton/>
+      <Pressable  onPress={() => {authStore.setState({user:null, isAuthenticated:false, isLoading:false})}} className="flex items-center justify-center flex-row gap-x-1 mt-0.5">
+        <Text>Logout</Text>
+      </Pressable>
       </View>
+      
         )}
         renderItem={({item, index}) => {
           const isEven:boolean = index%2 === 0;

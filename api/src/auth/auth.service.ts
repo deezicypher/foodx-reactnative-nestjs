@@ -131,7 +131,8 @@ export class AuthService {
                 email: user.email
             })
         }
-        return user
+        const {password, ...result} = user
+        return result
     }
 
     async login(user:User){

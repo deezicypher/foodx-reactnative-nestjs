@@ -10,10 +10,13 @@ import api from '../../services/api'
 import { useState } from 'react'
 import getErrorMessage from '../../utils/getErrorMessage'
 import AppErrorDialog from '@/components/ErrorDialog'
+import useAuthStore from '@/store/auth.store'
+import { saveTokens } from '@/libs/auth-storage'
 
 
 
 const SignIn = () => {
+  const {fetchAuthenticatedUser} = useAuthStore();
 
   const {control, handleSubmit,
     formState: {errors}} = useForm<SigninForm>(
@@ -39,7 +42,10 @@ const SignIn = () => {
 
   const signIn = async (data: SigninForm) => {
     try {
-      await mutation.mutateAsync(data)
+      const res = await mutation.mutateAsync(data)
+      await saveTokens(res.data.accessToken, res.data.refreshToken)
+      await fetchAuthenticatedUser()
+      router.replace('/(tabs)')
     } catch (error:any) {
       const errMsg = getErrorMessage(error)
       if(error.response?.data.code === "EMAIL_NOT_VERIFIED"){
