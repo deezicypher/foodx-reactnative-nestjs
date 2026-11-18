@@ -1,0 +1,33 @@
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Category } from "../../categories/entities/category.entity";
+
+@Entity('menu')
+export class Menu {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    @Column()
+    name: string;
+
+    @Column()
+    description: string;
+
+    @Column()
+    image_url: string;
+
+    @Column({type: "double precision", scale: 2, precision: 3})
+    rating: number;
+
+    @Column()
+    calories: number;
+
+    @Column()
+    protein: number;
+
+    @Column({type: "decimal"})
+    price: number;
+    
+    @ManyToOne(() => Category, category => category.menu, { onDelete: 'CASCADE' })
+    @JoinColumn()
+    category: Category;
+}
