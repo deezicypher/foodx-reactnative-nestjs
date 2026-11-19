@@ -4,13 +4,13 @@ import useAuthStore from '@/store/auth.store';
 import { TabBarIconProps } from '../../../type';
 import { images } from '../../../constants';
 import authStore from '@/store/auth.store';
-
+import cn from 'clsx'
 
 const TabBarIcon = ({focused, icon, title}: TabBarIconProps) => {
   return (
     <View className="flex min-w-20 h-full items-center justify-center gap-1 mt-12">
       <Image source={icon} className="size-7" resizeMode="contain"  tintColor={focused ? '#FE8C00' : '#5D5F6D'} />
-      <Text>{title}</Text>
+      <Text className={cn("text-sm font-bold", focused ? "text-primary": "text-gray-200")}>{title}</Text>
     </View>
   )
 }

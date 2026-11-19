@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Category } from "../../categories/entities/category.entity";
+import { Customization } from "../../customizations/entities/customization.entity";
 
 @Entity('menu')
 export class Menu {
@@ -30,4 +31,8 @@ export class Menu {
     @ManyToOne(() => Category, category => category.menu, { onDelete: 'CASCADE' })
     @JoinColumn()
     category: Category;
+
+    @ManyToMany(() => Customization, customization => customization.menu)
+    @JoinTable()
+    customization: Customization []
 }

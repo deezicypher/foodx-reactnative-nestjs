@@ -11,6 +11,9 @@ import { typeOrmAsyncConfig } from './db/data-source';
 import { AuthModule } from './auth/auth.module';
 import { BullModule } from '@nestjs/bullmq';
 import { MailModule } from './mail/mail.module';
+import { CategoriesModule } from './categories/categories.module';
+import { MenuModule } from './menu/menu.module';
+import { CustomizationsModule } from './customizations/customizations.module';
 
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -54,6 +57,9 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     UsersModule,
     AuthModule,
     MailModule,
+    CategoriesModule,
+    MenuModule,
+    CustomizationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

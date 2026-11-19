@@ -24,9 +24,6 @@ export default function Index() {
         </TouchableOpacity>
       </View>
       <CartButton/>
-      <Pressable  onPress={() => {authStore.setState({user:null, isAuthenticated:false, isLoading:false})}} className="flex items-center justify-center flex-row gap-x-1 mt-0.5">
-        <Text>Logout</Text>
-      </Pressable>
       </View>
       
         )}
