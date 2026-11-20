@@ -17,6 +17,34 @@ export class MenuService {
     return this.menuRepo.save(this.menuRepo.create(dto));
   }
 
+  async search(query?:string, category?:string, limit?:number){
+
+    const normalizedCategory = category?.trim().toLowerCase();
+    const normalizedQuery = query?.trim().toLowerCase();
+
+    const queryBuilder = this.menuRepo
+      .createQueryBuilder('menu')
+      .leftJoinAndSelect('menu.category', 'category')
+      .leftJoinAndSelect('menu.customization', 'customization')
+      .orderBy('menu.createdAt', 'DESC')
+
+    if(normalizedQuery && !['undefined', 'null'].includes(normalizedQuery)){
+      queryBuilder.andWhere('menu.name ILIKE :query', 
+        {query: `%${normalizedQuery}%`})
+    }
+
+    if(normalizedCategory && !['undefined','null'].includes(normalizedCategory)){
+      queryBuilder.andWhere('menu.category.name ILIKE :category',
+        {category: `%${normalizedCategory}%`})
+    }
+
+    if(limit !== undefined && Number.isFinite(limit) && limit > 0){
+      queryBuilder.take(Math.floor(limit))
+    }
+
+    return queryBuilder.getMany()
+  }
+
   findAll() {
     return this.menuRepo.find();
   }

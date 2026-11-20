@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
@@ -11,6 +11,15 @@ export class MenuController {
   @Post()
   create(@Body() dto: CreateMenuDto) {
     return this.menuService.create(dto);
+  }
+
+  @Get()
+  search(
+    @Query('query') query?:string,
+    @Query('category') category?:string,
+    @Query('limit') limit?: string
+  ){
+    return this.menuService.search(query,category, limit === undefined? undefined : +limit)
   }
 
   @Get()

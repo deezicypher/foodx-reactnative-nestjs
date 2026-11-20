@@ -1,11 +1,13 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Customization } from '../../customizations/entities/customization.entity';
@@ -24,7 +26,7 @@ export class Menu {
   @Column()
   image_url: string;
 
-  @Column({ type: 'double precision', scale: 2, precision: 3 })
+  @Column({ type: 'double precision' })
   rating: number;
 
   @Column()
@@ -49,4 +51,11 @@ export class Menu {
     inverseJoinColumn: { name: 'customizationId', referencedColumnName: 'id' },
   })
   customization: Customization[];
+
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
