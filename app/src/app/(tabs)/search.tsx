@@ -6,13 +6,31 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import cn from "clsx"
 import MenuCard from '@/components/MenuCard'
 import { MenuItem } from '../../../type'
+import SearchBar from '@/components/SearchBar'
+import Filter from '@/components/Filter'
+import { useLocalSearchParams } from 'expo-router'
 
 const Search = () => {
+  const {category, query} = useLocalSearchParams<{query?:string; category?:string}>();
+
   const getMenu = async () => {
-    const res = await api.get('menu')
+    const res = await api.get('menu/search', {
+      params: { category, query },
+    })
     return res.data
   }
-  const {data, isPending} = useQuery({queryKey:['menus'], queryFn: getMenu})
+
+  const getCategories = async () => {
+    const res = await api.get('categories')
+    return res.data
+  }
+
+  const {data, isPending} = useQuery({
+    queryKey: ['menus', category, query],
+    queryFn: getMenu,
+  })
+  const {data:categories,isPending:isPendingCat} = useQuery({queryKey:['categories'], queryFn:getCategories})
+
   return (
     <SafeAreaView className='bg-white h-full'>
       <FlatList
@@ -42,8 +60,8 @@ const Search = () => {
               </View>
               <CartButton/>
             </View>
-            <Text>Search Input</Text>
-            <Text>Filter</Text>
+            <SearchBar />
+            <Filter categories={categories}/>
 
           </View>
         )}

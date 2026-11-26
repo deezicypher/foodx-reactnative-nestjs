@@ -19,7 +19,7 @@ export class MenuService {
 
   async search(query?:string, category?:string, limit?:number){
 
-    const normalizedCategory = category?.trim().toLowerCase();
+    const categoryId = category?.trim();
     const normalizedQuery = query?.trim().toLowerCase();
 
     const queryBuilder = this.menuRepo
@@ -33,9 +33,8 @@ export class MenuService {
         {query: `%${normalizedQuery}%`})
     }
 
-    if(normalizedCategory && !['undefined','null'].includes(normalizedCategory)){
-      queryBuilder.andWhere('menu.category.name ILIKE :category',
-        {category: `%${normalizedCategory}%`})
+    if(categoryId && !['undefined','null'].includes(categoryId.toLowerCase())){
+      queryBuilder.andWhere('category.id = :categoryId', { categoryId })
     }
 
     if(limit !== undefined && Number.isFinite(limit) && limit > 0){
