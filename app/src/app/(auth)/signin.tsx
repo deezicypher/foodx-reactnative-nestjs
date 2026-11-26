@@ -47,6 +47,7 @@ const SignIn = () => {
       await fetchAuthenticatedUser()
       router.replace('/(tabs)')
     } catch (error:any) {
+      // in case of timeout, check ipconfig
       const errMsg = getErrorMessage(error)
       if(error.response?.data.code === "EMAIL_NOT_VERIFIED"){
         setErrorDialog(prev => ({...prev,name:"Email Verification",message:errMsg, visible:true}))

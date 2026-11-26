@@ -13,7 +13,7 @@ export class MenuController {
     return this.menuService.create(dto);
   }
 
-  @Get()
+  @Get('search')
   search(
     @Query('query') query?:string,
     @Query('category') category?:string,
